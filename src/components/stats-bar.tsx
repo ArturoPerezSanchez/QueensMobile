@@ -10,6 +10,7 @@ type StatsBarProps = {
   size: number;
   timerPaused: boolean;
   compact?: boolean;
+  vertical?: boolean;
 };
 
 type MetricProps = {
@@ -17,11 +18,18 @@ type MetricProps = {
   value: string;
   muted?: boolean;
   compact?: boolean;
+  vertical?: boolean;
 };
 
-function Metric({ label, value, muted = false, compact = false }: MetricProps) {
+function Metric({
+  label,
+  value,
+  muted = false,
+  compact = false,
+  vertical = false,
+}: MetricProps) {
   return (
-    <View style={styles.metric}>
+    <View style={[styles.metric, vertical && styles.metricVertical]}>
       <Text style={[styles.label, compact && styles.labelCompact]}>{label}</Text>
       <Text
         style={[
@@ -43,14 +51,37 @@ export function StatsBar({
   size,
   timerPaused,
   compact = false,
+  vertical = false,
 }: StatsBarProps) {
   return (
-    <View style={[styles.bar, compact && styles.barCompact]}>
-      <Metric compact={compact} label={timerPaused ? 'TIMER PAUSED' : 'TIMER'} value={timerPaused ? '--:--' : formatTime(elapsedSeconds)} muted={timerPaused} />
-      <View style={styles.divider} />
-      <Metric compact={compact} label="BEST" value={bestTime === undefined ? '--:--' : formatTime(bestTime)} muted={bestTime === undefined} />
-      <View style={styles.divider} />
-      <Metric compact={compact} label="QUEENS" value={`${queenCount}/${size}`} />
+    <View
+      style={[
+        styles.bar,
+        compact && styles.barCompact,
+        vertical && styles.barVertical,
+      ]}>
+      <Metric
+        compact={compact}
+        label={timerPaused ? 'TIMER PAUSED' : 'TIMER'}
+        muted={timerPaused}
+        value={timerPaused ? '--:--' : formatTime(elapsedSeconds)}
+        vertical={vertical}
+      />
+      <View style={[styles.divider, vertical && styles.dividerVertical]} />
+      <Metric
+        compact={compact}
+        label="BEST"
+        muted={bestTime === undefined}
+        value={bestTime === undefined ? '--:--' : formatTime(bestTime)}
+        vertical={vertical}
+      />
+      <View style={[styles.divider, vertical && styles.dividerVertical]} />
+      <Metric
+        compact={compact}
+        label="QUEENS"
+        value={`${queenCount}/${size}`}
+        vertical={vertical}
+      />
     </View>
   );
 }
@@ -69,6 +100,11 @@ const styles = StyleSheet.create({
   barCompact: {
     minHeight: 58,
   },
+  barVertical: {
+    flexDirection: 'column',
+    minHeight: 0,
+    paddingVertical: spacing.xs,
+  },
   metric: {
     alignItems: 'center',
     flex: 1,
@@ -76,11 +112,20 @@ const styles = StyleSheet.create({
     minWidth: 0,
     paddingHorizontal: spacing.xs,
   },
+  metricVertical: {
+    flex: 0,
+    minHeight: 42,
+    paddingVertical: spacing.xs,
+  },
   divider: {
     alignSelf: 'center',
     backgroundColor: colors.line,
     height: 32,
     width: StyleSheet.hairlineWidth,
+  },
+  dividerVertical: {
+    height: StyleSheet.hairlineWidth,
+    width: '70%',
   },
   label: {
     color: colors.subtle,

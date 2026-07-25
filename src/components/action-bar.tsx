@@ -14,6 +14,7 @@ type ActionBarProps = {
   patterns: boolean;
   autoMark: boolean;
   compact?: boolean;
+  vertical?: boolean;
   solutionAvailable: boolean;
   solutionRevealed: boolean;
   solved: boolean;
@@ -32,6 +33,7 @@ type ActionProps = {
   disabled?: boolean;
   primary?: boolean;
   compact?: boolean;
+  vertical?: boolean;
   onPress: () => void;
 };
 
@@ -42,6 +44,7 @@ function Action({
   disabled = false,
   primary = false,
   compact = false,
+  vertical = false,
   onPress,
 }: ActionProps) {
   const color = disabled
@@ -62,6 +65,7 @@ function Action({
       style={({ pressed }) => [
         styles.action,
         compact && styles.actionCompact,
+        vertical && styles.actionVertical,
         active && styles.activeAction,
         primary && styles.primaryAction,
         disabled && styles.disabledAction,
@@ -81,6 +85,7 @@ export function ActionBar({
   patterns,
   autoMark,
   compact = false,
+  vertical = false,
   solutionAvailable,
   solutionRevealed,
   solved,
@@ -92,9 +97,28 @@ export function ActionBar({
   onNewGame,
 }: ActionBarProps) {
   return (
-    <View style={[styles.bar, compact && styles.barCompact]}>
-      <Action active={patterns} compact={compact} icon={Palette} label="Patterns" onPress={onTogglePatterns} />
-      <Action compact={compact} disabled={loading || solutionRevealed || solved} icon={RotateCcw} label="Retry" onPress={onRetry} />
+    <View
+      style={[
+        styles.bar,
+        compact && styles.barCompact,
+        vertical && styles.barVertical,
+      ]}>
+      <Action
+        active={patterns}
+        compact={compact}
+        icon={Palette}
+        label="Patterns"
+        onPress={onTogglePatterns}
+        vertical={vertical}
+      />
+      <Action
+        compact={compact}
+        disabled={loading || solutionRevealed || solved}
+        icon={RotateCcw}
+        label="Retry"
+        onPress={onRetry}
+        vertical={vertical}
+      />
       <Action
         active={solutionRevealed}
         compact={compact}
@@ -102,9 +126,25 @@ export function ActionBar({
         icon={Eye}
         label="Solution"
         onPress={onSolution}
+        vertical={vertical}
       />
-      <Action active={autoMark} compact={compact} icon={ShieldCheck} label="Auto X" onPress={onToggleAutoMark} />
-      <Action compact={compact} disabled={loading} icon={RefreshCw} label="New game" onPress={onNewGame} primary />
+      <Action
+        active={autoMark}
+        compact={compact}
+        icon={ShieldCheck}
+        label="Auto X"
+        onPress={onToggleAutoMark}
+        vertical={vertical}
+      />
+      <Action
+        compact={compact}
+        disabled={loading}
+        icon={RefreshCw}
+        label="New game"
+        onPress={onNewGame}
+        primary
+        vertical={vertical}
+      />
     </View>
   );
 }
@@ -123,6 +163,9 @@ const styles = StyleSheet.create({
   barCompact: {
     padding: 4,
   },
+  barVertical: {
+    flexDirection: 'column',
+  },
   action: {
     alignItems: 'center',
     borderRadius: radius.sm,
@@ -136,6 +179,14 @@ const styles = StyleSheet.create({
   actionCompact: {
     gap: 2,
     minHeight: 50,
+  },
+  actionVertical: {
+    flex: 0,
+    flexDirection: 'row',
+    gap: spacing.sm,
+    justifyContent: 'flex-start',
+    minHeight: 46,
+    paddingHorizontal: spacing.sm,
   },
   activeAction: {
     backgroundColor: 'rgba(0, 114, 178, 0.10)',

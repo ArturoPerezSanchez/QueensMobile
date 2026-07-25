@@ -7,6 +7,7 @@ import { colors, radius, spacing } from '@/constants/theme';
 type AppHeaderProps = {
   size: number;
   compact?: boolean;
+  rail?: boolean;
   onOpenSizes: () => void;
   onOpenRules: () => void;
 };
@@ -14,12 +15,18 @@ type AppHeaderProps = {
 export function AppHeader({
   size,
   compact = false,
+  rail = false,
   onOpenSizes,
   onOpenRules,
 }: AppHeaderProps) {
   return (
-    <View style={[styles.header, compact && styles.headerCompact]}>
-      <View style={styles.brand}>
+    <View
+      style={[
+        styles.header,
+        compact && styles.headerCompact,
+        rail && styles.headerRail,
+      ]}>
+      <View style={[styles.brand, rail && styles.brandRail]}>
         <Image
           source={require('../../assets/images/queens-logo.png')}
           style={[styles.logo, compact && styles.logoCompact]}
@@ -27,7 +34,7 @@ export function AppHeader({
         <Text style={[styles.title, compact && styles.titleCompact]}>Queens</Text>
       </View>
 
-      <View style={styles.tools}>
+      <View style={[styles.tools, rail && styles.toolsRail]}>
         <Pressable
           accessibilityLabel={`Board size ${size} by ${size}. Change board size`}
           accessibilityRole="button"
@@ -69,10 +76,18 @@ const styles = StyleSheet.create({
   headerCompact: {
     minHeight: 40,
   },
+  headerRail: {
+    alignItems: 'stretch',
+    flexDirection: 'column',
+    gap: spacing.sm,
+  },
   brand: {
     alignItems: 'center',
     flexDirection: 'row',
     gap: spacing.sm,
+  },
+  brandRail: {
+    justifyContent: 'center',
   },
   logo: {
     borderRadius: radius.sm,
@@ -96,6 +111,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     gap: spacing.sm,
+  },
+  toolsRail: {
+    gap: spacing.xs,
+    justifyContent: 'center',
   },
   sizeButton: {
     alignItems: 'center',

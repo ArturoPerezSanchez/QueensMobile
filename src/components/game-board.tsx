@@ -292,7 +292,7 @@ export function GameBoard({
                 {hasMark && !hasQueen && (
                   <X
                     color={colors.ink}
-                    opacity={manualMarks.has(key) ? 0.44 : 0.32}
+                    opacity={manualMarks.has(key) ? 0.65 : 0.5}
                     size={Math.max(17, cellSize * 0.5)}
                     strokeWidth={1.35}
                   />

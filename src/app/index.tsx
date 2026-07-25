@@ -19,7 +19,7 @@ import { useQueensGame } from '@/hooks/use-queens-game';
 
 const MAX_CONTENT_WIDTH = 540;
 const MAX_LANDSCAPE_CONTENT_WIDTH = 980;
-const MIN_LANDSCAPE_SIDEBAR_WIDTH = 250;
+const MIN_LANDSCAPE_RAIL_WIDTH = 124;
 
 export default function GameScreen() {
   const { height, width } = useWindowDimensions();
@@ -28,15 +28,15 @@ export default function GameScreen() {
   const [showSizes, setShowSizes] = useState(false);
   const game = useQueensGame();
   const isLandscape = width > height;
-  const viewportWidth = width - insets.left - insets.right;
   const viewportHeight = height - insets.top - insets.bottom;
   const portraitContentWidth = Math.min(width - spacing.xl, MAX_CONTENT_WIDTH);
   const landscapeContentWidth = Math.min(
-    viewportWidth - spacing.xl,
+    width - spacing.xl,
     MAX_LANDSCAPE_CONTENT_WIDTH,
   );
   const landscapeBoardWidth =
-    landscapeContentWidth - MIN_LANDSCAPE_SIDEBAR_WIDTH - spacing.lg;
+    landscapeContentWidth -
+    2 * (MIN_LANDSCAPE_RAIL_WIDTH + spacing.md);
   const boardDimension = Math.floor(
     isLandscape
       ? Math.min(
@@ -46,8 +46,8 @@ export default function GameScreen() {
         )
       : portraitContentWidth,
   );
-  const landscapeSidebarWidth =
-    landscapeContentWidth - boardDimension - spacing.lg;
+  const landscapeRailWidth =
+    (landscapeContentWidth - boardDimension - 2 * spacing.md) / 2;
   const queenCount = game.status?.queenCount ?? 0;
   const solved = game.status?.isSolved ?? false;
   const hasConflicts = Boolean(game.status && game.status.conflicts.size > 0);
@@ -64,6 +64,7 @@ export default function GameScreen() {
   const header = (
     <AppHeader
       compact={isLandscape}
+      rail={isLandscape}
       onOpenRules={() => setShowRules(true)}
       onOpenSizes={() => setShowSizes(true)}
       size={game.size}
@@ -78,6 +79,7 @@ export default function GameScreen() {
       queenCount={queenCount}
       size={game.size}
       timerPaused={game.solutionRevealed}
+      vertical={isLandscape}
     />
   );
 
@@ -146,11 +148,14 @@ export default function GameScreen() {
       solutionAvailable={Boolean(game.puzzle?.solution)}
       solutionRevealed={game.solutionRevealed}
       solved={solved}
+      vertical={isLandscape}
     />
   );
 
   return (
-    <SafeAreaView edges={['top', 'right', 'bottom', 'left']} style={styles.safeArea}>
+    <SafeAreaView
+      edges={isLandscape ? ['top', 'bottom'] : ['top', 'right', 'bottom', 'left']}
+      style={styles.safeArea}>
       <ScrollView
         bounces={false}
         contentContainerStyle={[
@@ -161,14 +166,28 @@ export default function GameScreen() {
         showsVerticalScrollIndicator={false}>
         {isLandscape ? (
           <View style={[styles.landscapeContent, { width: landscapeContentWidth }]}>
-            {board}
             <View
               style={[
-                styles.landscapeSidebar,
-                { minHeight: boardDimension, width: landscapeSidebarWidth },
+                styles.landscapeRail,
+                {
+                  minHeight: boardDimension,
+                  paddingLeft: insets.left,
+                  width: landscapeRailWidth,
+                },
               ]}>
               {header}
               {stats}
+            </View>
+            {board}
+            <View
+              style={[
+                styles.landscapeRail,
+                {
+                  minHeight: boardDimension,
+                  paddingRight: insets.right,
+                  width: landscapeRailWidth,
+                },
+              ]}>
               {actions}
             </View>
           </View>
@@ -220,10 +239,10 @@ const styles = StyleSheet.create({
   landscapeContent: {
     alignItems: 'center',
     flexDirection: 'row',
-    gap: spacing.lg,
+    gap: spacing.md,
     justifyContent: 'center',
   },
-  landscapeSidebar: {
+  landscapeRail: {
     gap: spacing.md,
     justifyContent: 'center',
   },
