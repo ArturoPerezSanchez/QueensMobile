@@ -13,6 +13,7 @@ import { colors, radius, spacing } from '@/constants/theme';
 type ActionBarProps = {
   patterns: boolean;
   autoMark: boolean;
+  compact?: boolean;
   solutionAvailable: boolean;
   solutionRevealed: boolean;
   solved: boolean;
@@ -30,6 +31,7 @@ type ActionProps = {
   active?: boolean;
   disabled?: boolean;
   primary?: boolean;
+  compact?: boolean;
   onPress: () => void;
 };
 
@@ -39,6 +41,7 @@ function Action({
   active = false,
   disabled = false,
   primary = false,
+  compact = false,
   onPress,
 }: ActionProps) {
   const color = disabled
@@ -58,13 +61,16 @@ function Action({
       onPress={onPress}
       style={({ pressed }) => [
         styles.action,
+        compact && styles.actionCompact,
         active && styles.activeAction,
         primary && styles.primaryAction,
         disabled && styles.disabledAction,
         pressed && !disabled && styles.pressed,
       ]}>
-      <Icon color={color} size={20} strokeWidth={1.9} />
-      <Text numberOfLines={1} style={[styles.label, { color }]}>
+      <Icon color={color} size={compact ? 18 : 20} strokeWidth={1.9} />
+      <Text
+        numberOfLines={1}
+        style={[styles.label, compact && styles.labelCompact, { color }]}>
         {label}
       </Text>
     </Pressable>
@@ -74,6 +80,7 @@ function Action({
 export function ActionBar({
   patterns,
   autoMark,
+  compact = false,
   solutionAvailable,
   solutionRevealed,
   solved,
@@ -85,18 +92,19 @@ export function ActionBar({
   onNewGame,
 }: ActionBarProps) {
   return (
-    <View style={styles.bar}>
-      <Action active={patterns} icon={Palette} label="Patterns" onPress={onTogglePatterns} />
-      <Action disabled={loading || solutionRevealed || solved} icon={RotateCcw} label="Retry" onPress={onRetry} />
+    <View style={[styles.bar, compact && styles.barCompact]}>
+      <Action active={patterns} compact={compact} icon={Palette} label="Patterns" onPress={onTogglePatterns} />
+      <Action compact={compact} disabled={loading || solutionRevealed || solved} icon={RotateCcw} label="Retry" onPress={onRetry} />
       <Action
         active={solutionRevealed}
+        compact={compact}
         disabled={loading || !solutionAvailable || solutionRevealed || solved}
         icon={Eye}
         label="Solution"
         onPress={onSolution}
       />
-      <Action active={autoMark} icon={ShieldCheck} label="Auto X" onPress={onToggleAutoMark} />
-      <Action disabled={loading} icon={RefreshCw} label="New game" onPress={onNewGame} primary />
+      <Action active={autoMark} compact={compact} icon={ShieldCheck} label="Auto X" onPress={onToggleAutoMark} />
+      <Action compact={compact} disabled={loading} icon={RefreshCw} label="New game" onPress={onNewGame} primary />
     </View>
   );
 }
@@ -112,6 +120,9 @@ const styles = StyleSheet.create({
     gap: 3,
     padding: 5,
   },
+  barCompact: {
+    padding: 4,
+  },
   action: {
     alignItems: 'center',
     borderRadius: radius.sm,
@@ -121,6 +132,10 @@ const styles = StyleSheet.create({
     minHeight: 58,
     minWidth: 0,
     paddingHorizontal: 2,
+  },
+  actionCompact: {
+    gap: 2,
+    minHeight: 50,
   },
   activeAction: {
     backgroundColor: 'rgba(0, 114, 178, 0.10)',
@@ -139,5 +154,8 @@ const styles = StyleSheet.create({
     fontSize: 9.5,
     fontWeight: '700',
     letterSpacing: 0,
+  },
+  labelCompact: {
+    fontSize: 9,
   },
 });

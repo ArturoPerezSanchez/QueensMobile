@@ -9,19 +9,27 @@ type StatsBarProps = {
   queenCount: number;
   size: number;
   timerPaused: boolean;
+  compact?: boolean;
 };
 
 type MetricProps = {
   label: string;
   value: string;
   muted?: boolean;
+  compact?: boolean;
 };
 
-function Metric({ label, value, muted = false }: MetricProps) {
+function Metric({ label, value, muted = false, compact = false }: MetricProps) {
   return (
     <View style={styles.metric}>
-      <Text style={styles.label}>{label}</Text>
-      <Text style={[styles.value, muted && styles.mutedValue]} numberOfLines={1}>
+      <Text style={[styles.label, compact && styles.labelCompact]}>{label}</Text>
+      <Text
+        style={[
+          styles.value,
+          compact && styles.valueCompact,
+          muted && styles.mutedValue,
+        ]}
+        numberOfLines={1}>
         {value}
       </Text>
     </View>
@@ -34,14 +42,15 @@ export function StatsBar({
   queenCount,
   size,
   timerPaused,
+  compact = false,
 }: StatsBarProps) {
   return (
-    <View style={styles.bar}>
-      <Metric label={timerPaused ? 'TIMER PAUSED' : 'TIMER'} value={timerPaused ? '--:--' : formatTime(elapsedSeconds)} muted={timerPaused} />
+    <View style={[styles.bar, compact && styles.barCompact]}>
+      <Metric compact={compact} label={timerPaused ? 'TIMER PAUSED' : 'TIMER'} value={timerPaused ? '--:--' : formatTime(elapsedSeconds)} muted={timerPaused} />
       <View style={styles.divider} />
-      <Metric label="BEST" value={bestTime === undefined ? '--:--' : formatTime(bestTime)} muted={bestTime === undefined} />
+      <Metric compact={compact} label="BEST" value={bestTime === undefined ? '--:--' : formatTime(bestTime)} muted={bestTime === undefined} />
       <View style={styles.divider} />
-      <Metric label="QUEENS" value={`${queenCount}/${size}`} />
+      <Metric compact={compact} label="QUEENS" value={`${queenCount}/${size}`} />
     </View>
   );
 }
@@ -56,6 +65,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     minHeight: 68,
     paddingHorizontal: spacing.sm,
+  },
+  barCompact: {
+    minHeight: 58,
   },
   metric: {
     alignItems: 'center',
@@ -77,12 +89,19 @@ const styles = StyleSheet.create({
     letterSpacing: 0,
     marginBottom: 4,
   },
+  labelCompact: {
+    fontSize: 9,
+    marginBottom: 3,
+  },
   value: {
     color: colors.ink,
     fontSize: 19,
     fontVariant: ['tabular-nums'],
     fontWeight: '800',
     letterSpacing: 0,
+  },
+  valueCompact: {
+    fontSize: 17,
   },
   mutedValue: {
     color: colors.subtle,
