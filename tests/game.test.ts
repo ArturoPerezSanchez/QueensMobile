@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
+  cycleCellState,
   evaluateGame,
   formatTime,
   getConflictCells,
@@ -19,6 +20,22 @@ const board = [
 test('formats elapsed time with stable tabular fields', () => {
   assert.equal(formatTime(0), '00:00');
   assert.equal(formatTime(65), '01:05');
+});
+
+test('cycles a tapped cell from empty to queen to mark to empty', () => {
+  const key = positionKey(2, 1);
+  let state = cycleCellState(new Set(), new Set(), key);
+
+  assert.equal(state.queens.has(key), true);
+  assert.equal(state.manualMarks.has(key), false);
+
+  state = cycleCellState(state.queens, state.manualMarks, key);
+  assert.equal(state.queens.has(key), false);
+  assert.equal(state.manualMarks.has(key), true);
+
+  state = cycleCellState(state.queens, state.manualMarks, key);
+  assert.equal(state.queens.has(key), false);
+  assert.equal(state.manualMarks.has(key), false);
 });
 
 test('recognizes a complete valid solution', () => {

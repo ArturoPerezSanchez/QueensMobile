@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { fetchPuzzle } from '@/lib/api';
 import {
+  cycleCellState,
   evaluateGame,
   getConflictCells,
   getForbiddenMarks,
@@ -187,30 +188,28 @@ export function useQueensGame() {
     haptic('warning');
   }, [haptic, puzzle?.solution, solutionCells]);
 
-  const toggleQueen = useCallback(
+  const cycleCell = useCallback(
     (row: number, col: number) => {
       if (!puzzle || loadState !== 'ready' || status?.isSolved || solutionRevealed) return;
       const key = positionKey(row, col);
+      const next = cycleCellState(queens, manualMarks, key);
+      const placedQueen = !queens.has(key) && next.queens.has(key);
 
-      setQueens((current) => {
-        const next = new Set(current);
-        if (next.has(key)) {
-          next.delete(key);
-        } else {
-          next.add(key);
-          setManualMarks((currentMarks) => {
-            const nextMarks = new Set(currentMarks);
-            nextMarks.delete(key);
-            return nextMarks;
-          });
-        }
+      setQueens(next.queens);
+      setManualMarks(next.manualMarks);
 
-        const nextStatus = evaluateGame(puzzle.board, next);
-        haptic(nextStatus.conflicts.size > 0 ? 'warning' : 'selection');
-        return next;
-      });
+      const nextStatus = evaluateGame(puzzle.board, next.queens);
+      haptic(placedQueen && nextStatus.conflicts.size > 0 ? 'warning' : 'selection');
     },
-    [haptic, loadState, puzzle, solutionRevealed, status?.isSolved],
+    [
+      haptic,
+      loadState,
+      manualMarks,
+      puzzle,
+      queens,
+      solutionRevealed,
+      status?.isSolved,
+    ],
   );
 
   const changeMark = useCallback(
@@ -259,7 +258,7 @@ export function useQueensGame() {
     newGame,
     retry,
     revealSolution,
-    toggleQueen,
+    cycleCell,
     changeMark,
     setPreference,
     markHaptic: () => haptic('selection'),

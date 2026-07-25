@@ -72,7 +72,7 @@ export default function GameScreen() {
                 marks={game.marks}
                 onChangeMark={game.changeMark}
                 onMarkStart={game.markHaptic}
-                onToggleQueen={game.toggleQueen}
+                onCycleCell={game.cycleCell}
                 queens={game.queens}
                 showPatterns={game.preferences.patterns}
                 solutionCells={game.solutionCells}

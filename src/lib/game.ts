@@ -6,6 +6,23 @@ export function positionKey(row: number, col: number): string {
   return `${row}:${col}`;
 }
 
+export function cycleCellState(
+  queens: ReadonlySet<string>,
+  manualMarks: ReadonlySet<string>,
+  key: string,
+): { queens: Set<string>; manualMarks: Set<string> } {
+  const nextQueens = new Set(queens);
+  const nextMarks = new Set(manualMarks);
+
+  if (nextQueens.delete(key)) {
+    nextMarks.add(key);
+  } else if (!nextMarks.delete(key)) {
+    nextQueens.add(key);
+  }
+
+  return { queens: nextQueens, manualMarks: nextMarks };
+}
+
 export function parsePositionKey(key: string): Position {
   const [row, col] = key.split(':').map(Number);
   return [row, col];

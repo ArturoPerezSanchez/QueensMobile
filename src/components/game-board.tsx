@@ -24,7 +24,7 @@ type GameBoardProps = {
   conflictCells: Set<string>;
   showPatterns: boolean;
   disabled: boolean;
-  onToggleQueen: (row: number, col: number) => void;
+  onCycleCell: (row: number, col: number) => void;
   onChangeMark: (row: number, col: number, mode: MarkMode) => void;
   onMarkStart: () => void;
 };
@@ -116,7 +116,7 @@ export function GameBoard({
   conflictCells,
   showPatterns,
   disabled,
-  onToggleQueen,
+  onCycleCell,
   onChangeMark,
   onMarkStart,
 }: GameBoardProps) {
@@ -215,7 +215,14 @@ export function GameBoard({
 
       if (!gesture.dragging && distance > 16) {
         gesture.moved = true;
+        gesture.dragging = true;
         clearTimer();
+        onMarkStart();
+        markCell(
+          gesture.startRow,
+          gesture.startCol,
+          positionKey(gesture.startRow, gesture.startCol),
+        );
       }
 
       if (gesture.dragging) {
@@ -224,7 +231,7 @@ export function GameBoard({
         markCell(cell.row, cell.col, cell.key);
       }
     },
-    [cellAt, clearTimer, markCell],
+    [cellAt, clearTimer, markCell, onMarkStart],
   );
 
   const finishGesture = useCallback(() => {
@@ -236,10 +243,10 @@ export function GameBoard({
   const handleRelease = useCallback(() => {
     const gesture = gestureRef.current;
     if (gesture && !gesture.dragging && !gesture.moved) {
-      onToggleQueen(gesture.startRow, gesture.startCol);
+      onCycleCell(gesture.startRow, gesture.startCol);
     }
     finishGesture();
-  }, [finishGesture, onToggleQueen]);
+  }, [finishGesture, onCycleCell]);
 
   return (
     <View
@@ -270,7 +277,7 @@ export function GameBoard({
                 colors={['rgba(255,255,255,0.20)', 'rgba(255,255,255,0)']}
                 end={{ x: 1, y: 1 }}
                 key={key}
-                onAccessibilityTap={() => onToggleQueen(rowIndex, colIndex)}
+                onAccessibilityTap={() => onCycleCell(rowIndex, colIndex)}
                 start={{ x: 0, y: 0 }}
                 style={[
                   styles.cell,
@@ -285,7 +292,7 @@ export function GameBoard({
                 {hasMark && !hasQueen && (
                   <X
                     color={colors.ink}
-                    opacity={manualMarks.has(key) ? 0.34 : 0.24}
+                    opacity={manualMarks.has(key) ? 0.44 : 0.32}
                     size={Math.max(17, cellSize * 0.5)}
                     strokeWidth={1.35}
                   />
