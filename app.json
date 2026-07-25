@@ -1,0 +1,42 @@
+{
+  "expo": {
+    "name": "Queens",
+    "slug": "queens-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/queens-logo.png",
+    "scheme": "queens",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "bundleIdentifier": "com.arturops.queens",
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.arturops.queens",
+      "adaptiveIcon": {
+        "backgroundColor": "#F4F1EB",
+        "foregroundImage": "./assets/images/queens-logo.png"
+      },
+      "predictiveBackGestureEnabled": true
+    },
+    "web": {
+      "output": "static",
+      "favicon": "./assets/images/queen.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#F4F1EB",
+          "image": "./assets/images/queens-logo.png",
+          "imageWidth": 112
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}
