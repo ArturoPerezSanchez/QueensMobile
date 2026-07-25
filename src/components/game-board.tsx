@@ -30,14 +30,19 @@ type GameBoardProps = {
 };
 
 type GestureState = {
-  startX: number;
-  startY: number;
+  startPageX: number;
+  startPageY: number;
   startRow: number;
   startCol: number;
   dragging: boolean;
   moved: boolean;
   mode: MarkMode;
   visited: Set<string>;
+};
+
+type BoardOrigin = {
+  x: number;
+  y: number;
 };
 
 function Pattern({ region, cellSize }: { region: number; cellSize: number }) {
@@ -116,6 +121,8 @@ export function GameBoard({
   onMarkStart,
 }: GameBoardProps) {
   const cellSize = dimension / board.length;
+  const boardRef = useRef<View>(null);
+  const boardOriginRef = useRef<BoardOrigin | null>(null);
   const longPressRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const gestureRef = useRef<GestureState | null>(null);
   const [pressedKey, setPressedKey] = useState<string | null>(null);
@@ -127,11 +134,19 @@ export function GameBoard({
 
   useEffect(() => clearTimer, [clearTimer]);
 
+  const measureBoard = useCallback(() => {
+    boardRef.current?.measure((_x, _y, _width, _height, pageX, pageY) => {
+      boardOriginRef.current = { x: pageX, y: pageY };
+    });
+  }, []);
+
   const cellAt = useCallback(
-    (event: GestureResponderEvent) => {
-      const { locationX, locationY } = event.nativeEvent;
-      const row = Math.min(board.length - 1, Math.max(0, Math.floor(locationY / cellSize)));
-      const col = Math.min(board.length - 1, Math.max(0, Math.floor(locationX / cellSize)));
+    (pageX: number, pageY: number, fallbackX: number, fallbackY: number) => {
+      const origin = boardOriginRef.current;
+      const boardX = origin ? pageX - origin.x : fallbackX;
+      const boardY = origin ? pageY - origin.y : fallbackY;
+      const row = Math.min(board.length - 1, Math.max(0, Math.floor(boardY / cellSize)));
+      const col = Math.min(board.length - 1, Math.max(0, Math.floor(boardX / cellSize)));
       return { row, col, key: positionKey(row, col) };
     },
     [board.length, cellSize],
@@ -150,28 +165,40 @@ export function GameBoard({
   const handleGrant = useCallback(
     (event: GestureResponderEvent) => {
       if (disabled) return;
-      const cell = cellAt(event);
-      const { locationX, locationY } = event.nativeEvent;
-      const mode: MarkMode = manualMarks.has(cell.key) ? 'remove' : 'add';
-      gestureRef.current = {
-        startX: locationX,
-        startY: locationY,
-        startRow: cell.row,
-        startCol: cell.col,
-        dragging: false,
-        moved: false,
-        mode,
-        visited: new Set(),
-      };
-      setPressedKey(cell.key);
+      const { locationX, locationY, pageX, pageY } = event.nativeEvent;
 
-      longPressRef.current = setTimeout(() => {
-        const gesture = gestureRef.current;
-        if (!gesture || gesture.moved) return;
-        gesture.dragging = true;
-        onMarkStart();
-        markCell(gesture.startRow, gesture.startCol, positionKey(gesture.startRow, gesture.startCol));
-      }, 340);
+      const beginGesture = () => {
+        const cell = cellAt(pageX, pageY, locationX, locationY);
+        const mode: MarkMode = manualMarks.has(cell.key) ? 'remove' : 'add';
+        gestureRef.current = {
+          startPageX: pageX,
+          startPageY: pageY,
+          startRow: cell.row,
+          startCol: cell.col,
+          dragging: false,
+          moved: false,
+          mode,
+          visited: new Set(),
+        };
+        setPressedKey(cell.key);
+
+        longPressRef.current = setTimeout(() => {
+          const gesture = gestureRef.current;
+          if (!gesture || gesture.moved) return;
+          gesture.dragging = true;
+          onMarkStart();
+          markCell(
+            gesture.startRow,
+            gesture.startCol,
+            positionKey(gesture.startRow, gesture.startCol),
+          );
+        }, 340);
+      };
+
+      boardRef.current?.measure((_x, _y, _width, _height, measuredPageX, measuredPageY) => {
+        boardOriginRef.current = { x: measuredPageX, y: measuredPageY };
+        beginGesture();
+      });
     },
     [cellAt, disabled, manualMarks, markCell, onMarkStart],
   );
@@ -180,8 +207,11 @@ export function GameBoard({
     (event: GestureResponderEvent) => {
       const gesture = gestureRef.current;
       if (!gesture) return;
-      const { locationX, locationY } = event.nativeEvent;
-      const distance = Math.hypot(locationX - gesture.startX, locationY - gesture.startY);
+      const { locationX, locationY, pageX, pageY } = event.nativeEvent;
+      const distance = Math.hypot(
+        pageX - gesture.startPageX,
+        pageY - gesture.startPageY,
+      );
 
       if (!gesture.dragging && distance > 16) {
         gesture.moved = true;
@@ -189,7 +219,7 @@ export function GameBoard({
       }
 
       if (gesture.dragging) {
-        const cell = cellAt(event);
+        const cell = cellAt(pageX, pageY, locationX, locationY);
         setPressedKey(cell.key);
         markCell(cell.row, cell.col, cell.key);
       }
@@ -214,11 +244,13 @@ export function GameBoard({
   return (
     <View
       accessibilityLabel={`${board.length} by ${board.length} Queens board`}
+      onLayout={measureBoard}
       onResponderGrant={handleGrant}
       onResponderMove={handleMove}
       onResponderRelease={handleRelease}
       onResponderTerminate={finishGesture}
       onStartShouldSetResponder={() => !disabled}
+      ref={boardRef}
       style={[styles.board, { height: dimension, width: dimension }]}>
       {board.map((row, rowIndex) => (
         <View key={`row-${rowIndex}`} style={[styles.row, { height: cellSize }]}>
