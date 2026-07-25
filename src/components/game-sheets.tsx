@@ -1,4 +1,15 @@
-import { Check, Crown, Hand, LayoutGrid, ShieldCheck, Sparkles, X } from 'lucide-react-native';
+import {
+  Check,
+  Crown,
+  Equal,
+  Hand,
+  LayoutGrid,
+  Moon,
+  ShieldCheck,
+  Sparkles,
+  Sun,
+  X,
+} from 'lucide-react-native';
 import type { ReactNode } from 'react';
 import {
   Modal,
@@ -55,16 +66,25 @@ function Sheet({ visible, title, onClose, children }: SheetProps) {
 type SizeSheetProps = {
   visible: boolean;
   size: number;
+  options?: readonly number[];
+  intro?: string;
   onChoose: (size: number) => void;
   onClose: () => void;
 };
 
-export function SizeSheet({ visible, size, onChoose, onClose }: SizeSheetProps) {
+export function SizeSheet({
+  visible,
+  size,
+  options = BOARD_SIZES,
+  intro = 'Choose a board. Larger boards need a little more patience.',
+  onChoose,
+  onClose,
+}: SizeSheetProps) {
   return (
     <Sheet onClose={onClose} title="Board size" visible={visible}>
-      <Text style={styles.intro}>Choose a board. Larger boards need a little more patience.</Text>
+      <Text style={styles.intro}>{intro}</Text>
       <View style={styles.sizeGrid}>
-        {BOARD_SIZES.map((option) => {
+        {options.map((option) => {
           const selected = option === size;
           return (
             <Pressable
@@ -147,6 +167,54 @@ export function RulesSheet({
         </Rule>
         <Rule icon={<Hand color={colors.muted} size={19} />} title="Use marks to think">
           Tap a cell to place a queen. Long-press to add an X, then drag to mark several cells.
+        </Rule>
+        <View style={styles.preferenceRow}>
+          <View style={styles.preferenceCopy}>
+            <Text style={styles.preferenceTitle}>Haptic feedback</Text>
+            <Text style={styles.preferenceText}>Gentle confirmation for moves and results.</Text>
+          </View>
+          <Switch
+            accessibilityLabel="Haptic feedback"
+            onValueChange={onToggleHaptics}
+            thumbColor={colors.white}
+            trackColor={{ false: '#C8CDD1', true: colors.accent }}
+            value={haptics}
+          />
+        </View>
+      </ScrollView>
+    </Sheet>
+  );
+}
+
+export function TangoRulesSheet({
+  visible,
+  haptics,
+  onToggleHaptics,
+  onClose,
+}: RulesSheetProps) {
+  return (
+    <Sheet onClose={onClose} title="How to play Tango" visible={visible}>
+      <ScrollView
+        bounces={false}
+        contentContainerStyle={styles.rulesContent}
+        showsVerticalScrollIndicator={false}>
+        <Text style={styles.intro}>
+          Fill every cell with a sun or moon while satisfying all five rules.
+        </Text>
+        <Rule icon={<Sun color="#B96C00" size={19} />} title="Balance every line">
+          Each row and column must contain the same number of suns and moons.
+        </Rule>
+        <Rule icon={<Moon color="#245B9F" size={19} />} title="Stop at two">
+          Never place three matching symbols next to each other horizontally or vertically.
+        </Rule>
+        <Rule icon={<Equal color={colors.success} size={19} />} title="Equals means match">
+          Cells separated by an equals sign must contain the same symbol.
+        </Rule>
+        <Rule icon={<X color={colors.danger} size={19} />} title="X means different">
+          Cells separated by an X must contain opposite symbols.
+        </Rule>
+        <Rule icon={<Hand color={colors.muted} size={19} />} title="Cycle each cell">
+          Tap an empty cell for a sun, tap again for a moon, and once more to clear it.
         </Rule>
         <View style={styles.preferenceRow}>
           <View style={styles.preferenceCopy}>

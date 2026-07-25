@@ -1,21 +1,27 @@
 import { Image } from 'expo-image';
-import { ChevronDown, CircleHelp } from 'lucide-react-native';
+import { ChevronDown, ChevronLeft, CircleHelp } from 'lucide-react-native';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { colors, radius, spacing } from '@/constants/theme';
 
 type AppHeaderProps = {
   size: number;
+  title: string;
+  logoSource: number;
   compact?: boolean;
   rail?: boolean;
+  onBack: () => void;
   onOpenSizes: () => void;
   onOpenRules: () => void;
 };
 
 export function AppHeader({
   size,
+  title,
+  logoSource,
   compact = false,
   rail = false,
+  onBack,
   onOpenSizes,
   onOpenRules,
 }: AppHeaderProps) {
@@ -27,11 +33,23 @@ export function AppHeader({
         rail && styles.headerRail,
       ]}>
       <View style={[styles.brand, rail && styles.brandRail]}>
+        <Pressable
+          accessibilityLabel="Back to games"
+          accessibilityRole="button"
+          hitSlop={8}
+          onPress={onBack}
+          style={({ pressed }) => [
+            styles.backButton,
+            compact && styles.backButtonCompact,
+            pressed && styles.pressed,
+          ]}>
+          <ChevronLeft color={colors.ink} size={compact ? 21 : 23} strokeWidth={2} />
+        </Pressable>
         <Image
-          source={require('../../assets/images/queens-logo.png')}
+          source={logoSource}
           style={[styles.logo, compact && styles.logoCompact]}
         />
-        <Text style={[styles.title, compact && styles.titleCompact]}>Queens</Text>
+        <Text style={[styles.title, compact && styles.titleCompact]}>{title}</Text>
       </View>
 
       <View style={[styles.tools, rail && styles.toolsRail]}>
@@ -88,6 +106,17 @@ const styles = StyleSheet.create({
   },
   brandRail: {
     justifyContent: 'center',
+  },
+  backButton: {
+    alignItems: 'center',
+    borderRadius: radius.pill,
+    height: 40,
+    justifyContent: 'center',
+    width: 32,
+  },
+  backButtonCompact: {
+    height: 34,
+    width: 26,
   },
   logo: {
     borderRadius: radius.sm,

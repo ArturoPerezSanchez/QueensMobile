@@ -6,8 +6,8 @@ import { formatTime } from '@/lib/game';
 type StatsBarProps = {
   elapsedSeconds: number;
   bestTime?: number;
-  queenCount: number;
-  size: number;
+  progressLabel: string;
+  progressValue: string;
   timerPaused: boolean;
   compact?: boolean;
   vertical?: boolean;
@@ -47,8 +47,8 @@ function Metric({
 export function StatsBar({
   elapsedSeconds,
   bestTime,
-  queenCount,
-  size,
+  progressLabel,
+  progressValue,
   timerPaused,
   compact = false,
   vertical = false,
@@ -78,8 +78,8 @@ export function StatsBar({
       <View style={[styles.divider, vertical && styles.dividerVertical]} />
       <Metric
         compact={compact}
-        label="QUEENS"
-        value={`${queenCount}/${size}`}
+        label={progressLabel}
+        value={progressValue}
         vertical={vertical}
       />
     </View>
